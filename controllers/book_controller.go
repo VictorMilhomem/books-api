@@ -4,15 +4,16 @@ import (
 	"bookApi/database"
 	"bookApi/models"
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"strconv"
 )
 
-func ShowBook(c *gin.Context) {
+func GetBook(c *gin.Context) {
 	id := c.Param("id")
 
 	newid, err := strconv.Atoi(id)
 	if err != nil {
-		c.JSON(400, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "ID has to be integer",
 		})
 	}
@@ -22,24 +23,24 @@ func ShowBook(c *gin.Context) {
 	err = db.First(&book, newid).Error
 
 	if err != nil {
-		c.JSON(400, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "could not find book: " + err.Error(),
 		})
 		return
 	}
 
-	c.JSON(200, book)
+	c.JSON(http.StatusOK, book)
 
 }
 
-func CreatBook(c *gin.Context) {
+func CreateBook(c *gin.Context) {
 	db := database.GetDataBase()
 
 	var book models.Book
 
 	err := c.ShouldBindJSON(&book)
 	if err != nil {
-		c.JSON(400, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "could not bind JSON: " + err.Error(),
 		})
 
@@ -48,29 +49,29 @@ func CreatBook(c *gin.Context) {
 
 	err = db.Create(&book).Error
 	if err != nil {
-		c.JSON(400, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "could not create book: " + err.Error(),
 		})
 
 		return
 	}
 
-	c.JSON(200, book)
+	c.JSON(http.StatusOK, book)
 }
 
-func ShowAllBooks(c *gin.Context) {
+func GetAllBooks(c *gin.Context) {
 	db := database.GetDataBase()
 
 	var books []models.Book
 	err := db.Find(&books).Error
 	if err != nil {
-		c.JSON(400, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "could not list books: " + err.Error(),
 		})
 
 		return
 	}
-	c.JSON(200, books)
+	c.JSON(http.StatusOK, books)
 }
 
 func DeleteBook(c *gin.Context) {
@@ -78,7 +79,7 @@ func DeleteBook(c *gin.Context) {
 	newid, err := strconv.Atoi(id)
 
 	if err != nil {
-		c.JSON(400, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "ID has to be integer",
 		})
 		return
@@ -88,13 +89,13 @@ func DeleteBook(c *gin.Context) {
 	err = db.Delete(&models.Book{}, newid).Error
 
 	if err != nil {
-		c.JSON(400, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "could not delete book: " + err.Error(),
 		})
 		return
 	}
 
-	c.Status(204)
+	c.Status(http.StatusNoContent)
 }
 
 func EditBook(c *gin.Context) {
@@ -104,7 +105,7 @@ func EditBook(c *gin.Context) {
 	err := c.ShouldBindJSON(&book)
 
 	if err != nil {
-		c.JSON(400, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "could not bind Json " + err.Error(),
 		})
 		return
@@ -112,12 +113,11 @@ func EditBook(c *gin.Context) {
 
 	err = db.Save(&book).Error
 	if err != nil {
-		c.JSON(400, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "could not create the book: " + err.Error(),
 		})
 		return
 	}
 
-	c.JSON(200, book)
+	c.JSON(http.StatusOK, book)
 }
-
